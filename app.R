@@ -43,7 +43,9 @@ ui <- fluidPage(
                                        "Top" = "top",
                                        "Random" = "random")),
             
-            actionButton("create_ws", "Create Unit Hydrograph")
+            actionButton("create_ws", "Create Unit Hydrograph"),
+            
+            width = 3
         ),
         
     
@@ -66,7 +68,9 @@ ui <- fluidPage(
            #plotOutput("watershed", width = "600px"),
            
            #plotOutput("UH", width = "600px")
-           splitLayout(cellWidths = c("50%", "50%"), plotOutput("watershed"), plotOutput("UH"))
+           splitLayout(cellWidths = c("50%", "50%"), plotOutput("watershed"), plotOutput("UH")),
+           
+           width = 9
         ),
 
     ),
@@ -85,7 +89,7 @@ ui <- fluidPage(
             ),
         
             mainPanel(
-                plotOutput("storm_plots", width = "1200px"),
+                plotOutput("storm_plots", width = "1000px"),
                 
                 br(),
                 br(),

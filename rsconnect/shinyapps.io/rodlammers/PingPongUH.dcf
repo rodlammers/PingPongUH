@@ -1,0 +1,13 @@
+name: PingPongUH
+title: PingPongUH
+username:
+account: rodlammers
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1672746
+bundleId: 2736431
+url: https://rodlammers.shinyapps.io/PingPongUH/
+when: 1579292464.64837
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: README.md

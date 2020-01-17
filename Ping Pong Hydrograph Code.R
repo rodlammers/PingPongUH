@@ -174,7 +174,7 @@ storm_hydrograph <- function(ws_ras, ppt){
   }
   
   par(mar = c(4.5, 4.5, 2, 1))
-  layout(mat = matrix(c(0, 2, 1, 2), nrow = 2, byrow = TRUE),  widths = c(0.3, 0.7))
+  layout(mat = matrix(c(0, 2, 1, 2), nrow = 2, byrow = TRUE),  widths = c(0.25, 0.75))
   colors <- RColorBrewer::brewer.pal(n = max(nrow(Q), 3), "Dark2")
   colors2 <- rep("black", length(ppt))
   colors2[which(!(1:length(colors2) %in% zero_rows))] <- colors

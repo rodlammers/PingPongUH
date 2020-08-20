@@ -43,7 +43,7 @@ ui <- fluidPage(
                                        "Top" = "top",
                                        "Random" = "random")),
             
-            actionButton("create_ws", "Create Unit Hydrograph"),
+            actionButton("create_ws", strong("Create Unit Hydrograph"), style = "background-color: #a6bddb"),
             
             width = 3
         ),
@@ -77,7 +77,33 @@ ui <- fluidPage(
     
     br(),
     br(),
+    br(),
+    br(),
         
+    sidebarLayout(
+        sidebarPanel(h2("Animate Unit Hydrograph"),
+                     
+                     br(),
+                     
+                     fluidRow(
+                         column(4, actionButton("start", strong("Start"), style = "background-color: #a6bddb")),
+                         column(4, actionButton("stop", strong("Stop"), style = "background-color: #a6bddb")),
+                         column(4, actionButton("next_button", strong("Next"), style = "background-color: #a6bddb"))
+                     ),
+                     
+                     width = 3),
+        
+        mainPanel(plotOutput("ws_animation"),
+                  
+                  width = 9)
+    ),
+    
+    br(),
+    br(),
+    br(),
+    br(),
+    
+    
     sidebarLayout(
         
 
@@ -85,7 +111,9 @@ ui <- fluidPage(
                 textInput("ppt", h4("Enter excess precip values (inches), separated by commas"),
                           "1,2,0.5"),
                 
-                actionButton("storm_hydrograph", "Create Storm Hydrograph")
+                actionButton("storm_hydrograph", strong("Create Storm Hydrograph"), style = "background-color: #a6bddb"),
+                
+                width = 3
             ),
         
             mainPanel(
@@ -94,7 +122,9 @@ ui <- fluidPage(
                 br(),
                 br(),
                 
-                h4("Code created by Rod Lammers (rodlammers@gmail.com).")
+                h4(a(href = "https://github.com/rodlammers/PingPongUH", target="_blank", "Code"), "created by Rod Lammers (rodlammers@gmail.com)."),
+                
+                width = 9
             )
     ),
     br()
@@ -111,7 +141,9 @@ server <- function(input, output) {
                              type = "error")
         }else{
             ws_ras <- create_WS(input$n, input$l, input$w, input$type)
-        
+            
+            dist_mat <- route_WS(ws_ras, plot = FALSE)
+            
             output$watershed <- renderPlot({
                 # # generate bins based on input$bins from ui.R
                 # x    <- faithful[, 2]
@@ -130,6 +162,78 @@ server <- function(input, output) {
                 route_WS(ws_ras, plot = TRUE)
             })
         }
+    })
+    
+    plot_values <- reactiveValues()
+    plot_values$ws_ras <- NULL
+    plot_values$ws_num <- NULL
+    plot_values$dist_mat <- NULL
+    plot_values$iteration <- 0
+    
+    forward <- function(){
+        ws_ras <- create_WS(input$n, input$l, input$w, input$type)
+        dist_mat <- route_WS(ws_ras, plot = FALSE)
+        
+        inputs <- animate_UH(dist_mat, ws_ras)
+        
+        plot_values$iteration <- ifelse(plot_values$iteration < length(inputs$ws_ras), plot_values$iteration + 1, 1)
+        
+        plot_values$ws_ras <- inputs$ws_ras[[plot_values$iteration]]
+        plot_values$ws_num <- inputs$ws_num[[plot_values$iteration]]
+        plot_values$dist_mat <- dist_mat
+        
+    }
+    
+    observeEvent(input$next_button, {
+        forward()
+    })
+    
+    session<-reactiveValues()
+    session$timer<-reactiveTimer(Inf)
+    session$started <- FALSE
+    
+    observeEvent(input$start, {
+        if (input$l * input$w < input$n){
+            showNotification(h4("You don't have enough seats for your students! Increase the width or length values."),
+                             type = "error")
+        }else{
+            
+            session$started <- TRUE
+            # session$timer<-reactiveTimer(900)
+            # observeEvent(session$timer(),{
+            #     
+            #     forward()
+            #     
+            # })
+            }
+        }
+    )
+    
+    
+    observeEvent(input$stop, {
+        #session$timer<-reactiveTimer(Inf)
+        session$started <- FALSE
+    })
+    
+    observe({
+        session$timer <- reactiveTimer(900)
+        observeEvent(session$timer(),{
+            if(isolate(session$started)){
+                isolate(forward())
+            }
+        })
+    })
+    
+    output$ws_animation <- renderPlot({
+        #session$i <- min(session$i + 1, length(inputs$ws_ras))
+        #animate_UH(dist_mat, ws_ras)
+        # lapply(1:length(inputs$ws_ras), function(x, inputs, dist_mat){
+        #     plot_animation(inputs$ws_ras[[x]], inputs$ws_num[[x]], dist_mat, x)
+        # }, inputs, dist_mat)
+        
+        #plot_animation(inputs$ws_ras[[session$i]], inputs$ws_num[[session$i]], dist_mat, session$i)
+        plot_animation(plot_values$ws_ras, plot_values$ws_num, plot_values$dist_mat, plot_values$iteration)
+        
     })
     
     observeEvent(input$storm_hydrograph, {
